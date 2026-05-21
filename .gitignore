@@ -1,0 +1,97 @@
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# VS Code / JetBrains
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# Git / local metadata
+# =========================
+*.orig
+*.rej
+
+# =========================
+# Java / Maven
+# =========================
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Build logs / test reports
+**/surefire-reports/
+**/failsafe-reports/
+
+# Java runtime logs / dumps
+*.log
+*.out
+*.err
+hs_err_pid*
+replay_pid*
+
+# Project logs directories
+logs/
+**/logs/
+
+# =========================
+# Node / Frontend
+# =========================
+**/node_modules/
+**/dist/
+**/.vite/
+**/.cache/
+**/coverage/
+
+# pnpm / npm / yarn debug logs
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Environment / secrets
+# =========================
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.local
+*.secret
+*.secrets
+
+# Keys / certificates
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+
+# =========================
+# Python (if local scripts are used)
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+*.bak
+
+# =========================
+# Optional: large local artifacts
+# =========================
+*.zip
+*.tar
+*.tar.gz
+*.7z

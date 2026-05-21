@@ -1,0 +1,553 @@
+openapi: 3.0.3
+info:
+  title: Gijela RAG API
+  version: 1.0.0
+  description: >-
+    RAG 专属接口文档。该文档独立于现有管理后台通用接口定义，供 RAG 查询工作台、索引任务监控页、别名复核台单独使用。
+servers:
+  - url: /api
+    description: 相对路径，由前端代理或部署网关补全
+tags:
+  - name: RagQuery
+    description: RAG 查询与问答
+  - name: RagIndex
+    description: RAG 索引构建与状态查询
+  - name: RagReview
+    description: RAG 别名复核
+paths:
+  /rag/query:
+    post:
+      tags:
+        - RagQuery
+      summary: 问答/计数统一入口
+      operationId: queryRag
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RagQueryRequest'
+      responses:
+        '200':
+          description: 成功或低置信降级
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagQueryResponseEnvelope'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '403':
+          description: 无权限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '503':
+          description: 依赖不可用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '504':
+          description: 上游超时
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+
+  /rag/index/rebuild-t1:
+    post:
+      tags:
+        - RagIndex
+      summary: 触发 T+1 索引构建
+      operationId: triggerRagIndexRebuild
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RagIndexRebuildRequest'
+      responses:
+        '200':
+          description: 任务已接收
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagIndexRebuildResponseEnvelope'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '403':
+          description: 无权限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+
+  /rag/index/status:
+    get:
+      tags:
+        - RagIndex
+      summary: 查询索引任务状态
+      operationId: getRagIndexStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jobId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: bizDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagIndexStatusResponseEnvelope'
+        '404':
+          description: 任务不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+
+  /rag/review/alias:
+    post:
+      tags:
+        - RagReview
+      summary: 人工复核别名冲突并回写
+      operationId: submitRagAliasReview
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RagAliasReviewRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagAliasReviewResponseEnvelope'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '403':
+          description: 无权限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+        '409':
+          description: 冲突未决
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagErrorResponseEnvelope'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RagQueryType:
+      type: string
+      enum:
+        - COUNT
+        - QA
+
+    RagBook:
+      type: string
+      enum:
+        - SAN_GUO
+        - SHUI_HU
+        - HONG_LOU
+        - XI_YOU_JI
+
+    RagQueryRequest:
+      type: object
+      required:
+        - queryText
+        - queryType
+        - book
+        - maxHops
+      properties:
+        queryText:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: 孙悟空在西游记中出现了多少次？
+        queryType:
+          $ref: '#/components/schemas/RagQueryType'
+        book:
+          $ref: '#/components/schemas/RagBook'
+        maxHops:
+          type: integer
+          minimum: 1
+          maximum: 3
+          example: 3
+        aliasMerge:
+          type: boolean
+          default: true
+        needEvidence:
+          type: boolean
+          default: true
+        timeoutMs:
+          type: integer
+          minimum: 1000
+          maximum: 10000
+          default: 5000
+
+    RagEvidence:
+      type: object
+      required:
+        - book
+        - chapter
+        - position
+        - snippet
+      properties:
+        book:
+          $ref: '#/components/schemas/RagBook'
+        chapter:
+          type: string
+          example: 第一回
+        position:
+          type: string
+          example: p12:l8
+        snippet:
+          type: string
+          example: ...石猴出世...
+
+    RagCountResult:
+      type: object
+      required:
+        - canonicalName
+        - aliases
+        - count
+      properties:
+        canonicalName:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        count:
+          type: integer
+          format: int64
+
+    RagQueryResponseData:
+      type: object
+      required:
+        - answerText
+        - answerType
+        - confidence
+        - evidences
+        - degraded
+      properties:
+        answerText:
+          type: string
+        answerType:
+          $ref: '#/components/schemas/RagQueryType'
+        confidence:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        countResult:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/RagCountResult'
+        evidences:
+          type: array
+          items:
+            $ref: '#/components/schemas/RagEvidence'
+        degraded:
+          type: boolean
+        degradeReason:
+          type: string
+          nullable: true
+
+    RagIndexRebuildRequest:
+      type: object
+      required:
+        - bizDate
+        - books
+        - operator
+      properties:
+        bizDate:
+          type: string
+          format: date
+        books:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RagBook'
+        force:
+          type: boolean
+          default: false
+        operator:
+          type: string
+
+    RagIndexRebuildResponseData:
+      type: object
+      required:
+        - jobId
+        - status
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - RUNNING
+            - SUCCESS
+            - FAILED
+        nextRetryAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    RagIndexStatusStats:
+      type: object
+      required:
+        - chunks
+        - entities
+        - relations
+        - aliasMerged
+      properties:
+        chunks:
+          type: integer
+        entities:
+          type: integer
+        relations:
+          type: integer
+        aliasMerged:
+          type: integer
+
+    RagIndexStatusResponseData:
+      type: object
+      required:
+        - jobId
+        - bizDate
+        - status
+        - retryCount
+        - startedAt
+      properties:
+        jobId:
+          type: string
+        bizDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+            - PENDING
+            - RUNNING
+            - SUCCESS
+            - FAILED
+        retryCount:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        stats:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/RagIndexStatusStats'
+
+    RagAliasReviewAction:
+      type: string
+      enum:
+        - MERGE
+        - REJECT
+
+    RagAliasReviewRequest:
+      type: object
+      required:
+        - reviewId
+        - canonicalName
+        - alias
+        - action
+        - reason
+        - reviewer
+      properties:
+        reviewId:
+          type: string
+        canonicalName:
+          type: string
+        alias:
+          type: string
+        action:
+          $ref: '#/components/schemas/RagAliasReviewAction'
+        reason:
+          type: string
+          minLength: 2
+          maxLength: 100
+        reviewer:
+          type: string
+
+    RagAliasReviewResponseData:
+      type: object
+      required:
+        - reviewId
+        - status
+        - appliedAt
+      properties:
+        reviewId:
+          type: string
+        status:
+          type: string
+          enum:
+            - DONE
+        appliedAt:
+          type: string
+          format: date-time
+
+    RagErrorResponseData:
+      type: object
+      nullable: true
+      properties:
+        detail:
+          type: string
+        degraded:
+          type: boolean
+        degradeReason:
+          type: string
+
+    RagQueryResponseEnvelope:
+      type: object
+      required:
+        - code
+        - message
+        - traceId
+        - data
+      properties:
+        code:
+          type: integer
+          example: 0
+        message:
+          type: string
+          example: OK
+        traceId:
+          type: string
+          example: rag-20260427-000001
+        data:
+          $ref: '#/components/schemas/RagQueryResponseData'
+
+    RagIndexRebuildResponseEnvelope:
+      type: object
+      required:
+        - code
+        - message
+        - traceId
+        - data
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        traceId:
+          type: string
+        data:
+          $ref: '#/components/schemas/RagIndexRebuildResponseData'
+
+    RagIndexStatusResponseEnvelope:
+      type: object
+      required:
+        - code
+        - message
+        - traceId
+        - data
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        traceId:
+          type: string
+        data:
+          $ref: '#/components/schemas/RagIndexStatusResponseData'
+
+    RagAliasReviewResponseEnvelope:
+      type: object
+      required:
+        - code
+        - message
+        - traceId
+        - data
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        traceId:
+          type: string
+        data:
+          $ref: '#/components/schemas/RagAliasReviewResponseData'
+
+    RagErrorResponseEnvelope:
+      type: object
+      required:
+        - code
+        - message
+        - traceId
+      properties:
+        code:
+          type: integer
+          example: 1302
+        message:
+          type: string
+          example: ALIAS_CONFLICT
+        traceId:
+          type: string
+        data:
+          $ref: '#/components/schemas/RagErrorResponseData'

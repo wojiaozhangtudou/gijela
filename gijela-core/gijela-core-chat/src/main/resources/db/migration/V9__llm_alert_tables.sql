@@ -1,0 +1,62 @@
+CREATE TABLE IF NOT EXISTS llm_alert_rule (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    tenant_id VARCHAR(64) NULL,
+    name VARCHAR(128) NOT NULL,
+    description VARCHAR(512) NULL,
+    enabled TINYINT NOT NULL DEFAULT 1,
+    metric_type VARCHAR(64) NOT NULL,
+    `condition` VARCHAR(16) NOT NULL,
+    threshold DECIMAL(18,4) NOT NULL,
+    window_minutes INT NOT NULL DEFAULT 5,
+    `group_by` VARCHAR(64) NULL,
+    filter_json TEXT NULL,
+    severity VARCHAR(16) NOT NULL DEFAULT 'warning',
+    cooldown_minutes INT NOT NULL DEFAULT 5,
+    notify_channels VARCHAR(256) NULL,
+    notify_recipients TEXT NULL,
+    version BIGINT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(64) NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by VARCHAR(64) NULL,
+    deleted TINYINT NOT NULL DEFAULT 0,
+    KEY idx_alert_rule_enabled_deleted (enabled, deleted),
+    KEY idx_alert_rule_tenant (tenant_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS llm_alert_event (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    tenant_id VARCHAR(64) NULL,
+    rule_id BIGINT NOT NULL,
+    triggered_at DATETIME NOT NULL,
+    metric_value DECIMAL(18,4) NULL,
+    metric_json TEXT NULL,
+    message VARCHAR(1024) NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'open',
+    alert_level VARCHAR(16) NOT NULL,
+    ack_by VARCHAR(64) NULL,
+    ack_at DATETIME NULL,
+    ack_comment VARCHAR(512) NULL,
+    resolved_by VARCHAR(64) NULL,
+    resolved_at DATETIME NULL,
+    resolved_comment VARCHAR(512) NULL,
+    related_log_query TEXT NULL,
+    version BIGINT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_alert_event_rule (rule_id),
+    KEY idx_alert_event_status (status),
+    KEY idx_alert_event_triggered_at (triggered_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS llm_alert_notification_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    alert_event_id BIGINT NOT NULL,
+    channel VARCHAR(32) NOT NULL,
+    recipient VARCHAR(128) NULL,
+    sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(32) NOT NULL,
+    response TEXT NULL,
+    KEY idx_alert_notification_event (alert_event_id),
+    KEY idx_alert_notification_sent_at (sent_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

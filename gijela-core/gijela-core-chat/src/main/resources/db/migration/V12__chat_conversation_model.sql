@@ -1,0 +1,2 @@
+ALTER TABLE `chat_conversation`
+  ADD COLUMN IF NOT EXISTS `model` VARCHAR(128) DEFAULT NULL COMMENT '会话所用模型' AFTER `title`;

@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gijela.morpheus</groupId>
+        <artifactId>gijela-core-llm</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>gijela-core-llm-sdk-observability</artifactId>
+    <name>gijela-core-llm-sdk-observability</name>
+    <description>LLM SDK 指标、审计与预算事件</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.gijela.morpheus</groupId>
+            <artifactId>gijela-core-llm-sdk-core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+</project>

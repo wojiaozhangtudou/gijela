@@ -1,0 +1,2 @@
+com.gijela.morpheus.security.autoconfig.SecurityAuthAutoConfiguration
+com.gijela.morpheus.security.config.MethodSecurityConfig

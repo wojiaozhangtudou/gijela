@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS `chat_model_config` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `tenant_id` VARCHAR(64) NOT NULL DEFAULT 'default',
+  `config_type` VARCHAR(32) NOT NULL COMMENT 'CHAT/EMBEDDING',
+  `provider_key` VARCHAR(64) NOT NULL DEFAULT 'openai' COMMENT '接口风格，固定为 openai',
+  `model` VARCHAR(128) NOT NULL COMMENT '模型名',
+  `base_url` VARCHAR(512) NOT NULL,
+  `api_key` VARCHAR(512) DEFAULT NULL,
+  `connect_timeout_seconds` INT NOT NULL DEFAULT 10,
+  `read_timeout_seconds` INT NOT NULL DEFAULT 60,
+  `call_timeout_seconds` INT NOT NULL DEFAULT 120,
+  `enabled` TINYINT(1) NOT NULL DEFAULT 1,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by` VARCHAR(64) DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by` VARCHAR(64) DEFAULT NULL,
+  `deleted` TINYINT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_chat_model_cfg_scope` (`tenant_id`, `config_type`, `provider_key`, `model`),
+  KEY `idx_chat_model_cfg_list` (`tenant_id`, `config_type`, `enabled`, `updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

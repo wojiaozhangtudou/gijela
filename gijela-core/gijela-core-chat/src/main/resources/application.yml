@@ -1,0 +1,137 @@
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 500
+      min-spare: 20
+  port: 9016
+  servlet:
+    context-path: /
+    encoding:
+      enabled: true
+      charset: UTF-8
+      force: true
+    session:
+      cookie:
+        http-only: true
+
+spring:
+  profiles:
+    active: dev
+  redis:
+    host: ${CHAT_REDIS_HOST:127.0.0.1}
+    port: ${CHAT_REDIS_PORT:6379}
+    database: ${CHAT_REDIS_DB:0}
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**.xml
+  type-aliases-package: com.gijela.morpheus.chat.domain.entity
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: order
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'chat'
+      display-name: '聊天联调'
+      paths-to-match: '/api/v1/chat/**'
+      packages-to-scan: com.gijela.morpheus.chat.controller
+  default-flat-param-object: true
+
+gijela:
+  chat:
+    conversation:
+      store: redis
+      redis-key-prefix: chat:session
+      recent-message-rounds: 20
+      summary-refresh-rounds: 10
+      summary-refresh-token-threshold: 6000
+    retrieval:
+      collection: chat_knowledge
+      enabled: true
+      endpoint: ${CHAT_QDRANT_ENDPOINT:http://127.0.0.1:6333}
+      api-key: ${CHAT_QDRANT_API_KEY:}
+      tenant-field: tenant_id
+      content-field: content
+      top-k: 5
+      index-chunk-size: 500
+      index-chunk-overlap: 100
+      index-file-max-chars: 200000
+      vector-distance: Cosine
+      auto-create-collection: true
+      hnsw-m: 16
+      hnsw-ef-construct: 128
+      hnsw-full-scan-threshold: 10000
+      quantization-mode: none
+      quantization-compression: x32
+      quantization-always-ram: false
+    storage:
+      # mode=gateway: 走 HTTP 上传网关（默认）
+      # mode=s3:      走 S3 直传（SigV4），适配 RustFS/MinIO 的 9000 端口
+      mode: ${CHAT_STORAGE_MODE:s3}
+      bucket: ${CHAT_STORAGE_BUCKET:chat-attachments}
+      key-pattern: tenant/session/yyyyMMdd/uuid.ext
+      endpoint: ${CHAT_STORAGE_ENDPOINT:http://127.0.0.1:9000}
+      upload-path: ${CHAT_STORAGE_UPLOAD_PATH:/api/v1/storage/objects/upload}
+      auth-token: ${CHAT_STORAGE_AUTH_TOKEN:}
+      access-key: ${CHAT_STORAGE_ACCESS_KEY:minioadmin}
+      secret-key: ${CHAT_STORAGE_SECRET_KEY:minioadmin}
+      region: ${CHAT_STORAGE_REGION:us-east-1}
+      s3-path-style: ${CHAT_STORAGE_S3_PATH_STYLE:true}
+      provider: rustfs
+    attachment-summary:
+      max-raw-chars: ${CHAT_ATTACHMENT_MAX_RAW_CHARS:50000}
+    graph:
+      enabled: true
+      uri: ${CHAT_GRAPH_URI:bolt://127.0.0.1:7687}
+      username: ${CHAT_GRAPH_USERNAME:neo4j}
+      password: ${CHAT_GRAPH_PASSWORD:secretgraph}
+      database: ${CHAT_GRAPH_DATABASE:neo4j}
+      default-space: ${CHAT_GRAPH_DEFAULT_SPACE:default}
+      max-file-size-mb: ${CHAT_GRAPH_MAX_FILE_SIZE_MB:10}
+      max-text-chars: ${CHAT_GRAPH_MAX_TEXT_CHARS:50000}
+      max-preview-entities: ${CHAT_GRAPH_MAX_PREVIEW_ENTITIES:300}
+      max-preview-relationships: ${CHAT_GRAPH_MAX_PREVIEW_RELATIONSHIPS:800}
+      max-tokens: ${CHAT_GRAPH_MAX_TOKENS:4096}
+      debug-prompt-operators: ${CHAT_GRAPH_DEBUG_PROMPT_OPERATORS:}
+  llm:
+    # SDK 者：Skill、MCP 拆分后的独立配置命名空间
+    skill:
+      scan-enabled: ${CHAT_SKILLS_SCAN_ENABLED:true}
+      local-path: ${CHAT_SKILLS_LOCAL_PATH:D:/workspace/gijela/skills}
+      hot-reload-enabled: false
+    mcp:
+      connect-timeout-seconds: ${CHAT_MCP_CONNECT_TIMEOUT_SECONDS:5}
+      read-timeout-seconds: ${CHAT_MCP_READ_TIMEOUT_SECONDS:30}
+      call-timeout-seconds: ${CHAT_MCP_CALL_TIMEOUT_SECONDS:30}
+      # stdio transport：会在管理端宿主机 fork 子进程，生产请置 false
+      allow-stdio: ${CHAT_MCP_ALLOW_STDIO:true}
+      # 命令白名单：为空表示放行任意命令；生产建议仅放行 npx / uvx / python / node
+      stdio-command-whitelist: []
+      stdio-startup-timeout-seconds: ${CHAT_MCP_STDIO_STARTUP_TIMEOUT_SECONDS:30}
+      stdio-call-timeout-seconds: ${CHAT_MCP_STDIO_CALL_TIMEOUT_SECONDS:60}
+      max-tools-exposed: ${CHAT_MCP_MAX_TOOLS_EXPOSED:64}
+      max-tool-response-chars: ${CHAT_MCP_MAX_TOOL_RESPONSE_CHARS:25000}
+      auto-expose-to-skills: ${CHAT_MCP_AUTO_EXPOSE_TO_SKILLS:true}
+      # 可选：定期重同步的 cron，空字符串 = 不调度
+      sync-cron: ""
+
+logging:
+  level:
+    root: INFO
+    com.gijela.morpheus.chat: INFO

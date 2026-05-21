@@ -1,0 +1,70 @@
+# Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 1000
+      min-spare: 30
+  port: 9006
+  servlet:
+    context-path: /
+    encoding:
+      enabled: true
+      charset: UTF-8
+      force: true
+    session:
+      cookie:
+        http-only: true
+
+spring:
+  config:
+    import: application-security-common.yml
+  # 环境 dev|test|prod
+  profiles:
+    active: dev
+  messages:
+    encoding: UTF-8
+    basename: i18n/messages
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+#mybatis
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**.xml
+  type-aliases-package: com.gijela.morpheus.pistil.domain.entity
+  configuration:
+    # MyBatis 配置
+    map-underscore-to-camel-case: true
+  global-config:
+    # 全局配置
+    db-config:
+      # 数据库配置
+      id-type: auto
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    #tags-sorter: alpha
+    operations-sorter: order
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      display-name: '权限管理'
+      paths-to-match: '/**'
+      packages-to-scan: com.gijela.morpheus.pistil.controller
+  default-flat-param-object: true
+
+logging:
+  config: classpath:logback-admin.xml
+#TRACE < DEBUG < INFO < WARN < ERROR < FATAL
+log:
+  level:
+    root: INFO
+    my: DEBUG
+  file: logs/admin-server.log
+  maxsize: 30MB

@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gijela.morpheus</groupId>
+        <artifactId>gijela-core</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>gijela-core-llm</artifactId>
+    <packaging>pom</packaging>
+    <name>gijela-core-llm</name>
+    <description>LLM SDK 聚合模块</description>
+
+    <modules>
+        <module>gijela-core-llm-sdk-core</module>
+        <module>gijela-core-llm-sdk-openai-compatible</module>
+        <module>gijela-core-llm-sdk-plugin</module>
+        <module>gijela-core-llm-sdk-observability</module>
+        <module>gijela-core-llm-sdk-skill</module>
+        <module>gijela-core-llm-sdk-mcp</module>
+    </modules>
+</project>

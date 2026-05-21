@@ -1,0 +1,27 @@
+-- V6: MCP Server 注册表（支持三种 transport：streamable_http / sse / stdio）
+CREATE TABLE IF NOT EXISTS `chat_mcp_server` (
+  `id`                BIGINT        NOT NULL AUTO_INCREMENT,
+  `tenant_id`         VARCHAR(64)   NOT NULL DEFAULT 'default' COMMENT '租户标识',
+  `name`              VARCHAR(64)   NOT NULL COMMENT '唯一名称（英文+短横线）',
+  `display_name`      VARCHAR(128)  NOT NULL COMMENT '展示名',
+  `description`       VARCHAR(512)  NULL COMMENT '描述',
+  `transport`         VARCHAR(24)   NOT NULL DEFAULT 'streamable_http' COMMENT 'streamable_http | sse | stdio',
+  `endpoint`          VARCHAR(512)  NULL COMMENT '远程 URL（streamable_http / sse 必填）',
+  `command`           VARCHAR(256)  NULL COMMENT 'stdio 必填：可执行命令（如 npx / uvx / python）',
+  `args_json`         VARCHAR(2048) NULL COMMENT 'stdio：参数数组的 JSON',
+  `env_json`          VARCHAR(2048) NULL COMMENT 'stdio：附加环境变量的 JSON Map',
+  `working_dir`       VARCHAR(512)  NULL COMMENT 'stdio：工作目录（可空）',
+  `auth_type`         VARCHAR(16)   NOT NULL DEFAULT 'none' COMMENT 'none | bearer（仅 http/sse 生效）',
+  `auth_token_cipher` VARCHAR(2048) NULL COMMENT 'AES-GCM 加密后的 token',
+  `enabled`           TINYINT(1)    NOT NULL DEFAULT 1 COMMENT '1=启用 0=禁用',
+  `status`            VARCHAR(16)   NOT NULL DEFAULT 'unknown' COMMENT 'unknown | ok | error',
+  `status_message`    VARCHAR(1024) NULL COMMENT '最近一次测试结果',
+  `tools_cache_json`  MEDIUMTEXT    NULL COMMENT 'tools/list 缓存（JSON 数组）',
+  `last_tested_at`    DATETIME      NULL COMMENT '最近一次连通性测试时间',
+  `created_by`        VARCHAR(64)   NULL,
+  `updated_by`        VARCHAR(64)   NULL,
+  `created_at`        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_tenant_name` (`tenant_id`, `name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MCP Server 注册表';

@@ -1,0 +1,66 @@
+name: chat-ci
+
+on:
+  push:
+    paths:
+      - 'gijela-bloom/gijela-bloom-chat/**'
+      - 'gijela-core/gijela-core-chat/**'
+      - '.github/workflows/chat-ci.yml'
+  pull_request:
+    paths:
+      - 'gijela-bloom/gijela-bloom-chat/**'
+      - 'gijela-core/gijela-core-chat/**'
+      - '.github/workflows/chat-ci.yml'
+
+jobs:
+  bloom-chat-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gijela-bloom/gijela-bloom-chat
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.11.0'
+          cache: 'pnpm'
+          cache-dependency-path: gijela-bloom/gijela-bloom-chat/pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+  core-chat-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gijela-core
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build chat dependency graph (skip tests)
+        run: mvn -B -pl gijela-core-chat -am -DskipTests install
+
+      - name: Run chat minimal test set
+        run: mvn -B -pl gijela-core-chat -Dtest=ChatControllerTest,ChatHistoryQueryServiceImplTest,RedisConversationStoreTest test

@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: ${PISTIL_DB_URL:jdbc:mysql://127.0.0.1:3306/gijela?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true}
+      username: ${PISTIL_DB_USERNAME:root}
+      password: ${PISTIL_DB_PASSWORD:secretmysql}
+      initial-size: 10
+      max-active: 100
+      min-idle: 10
+      max-wait: 6000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: ${DRUID_STAT_USERNAME:druid_monitor}
+        login-password: ${DRUID_STAT_PASSWORD:changeDruidMonitorPass}

@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${CHAT_DB_URL:jdbc:mysql://127.0.0.1:3306/gijela_chat?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true}
+    username: ${CHAT_DB_USERNAME:root}
+    password: ${CHAT_DB_PASSWORD:secretmysql}
+
+app:
+  llm:
+    es:
+      enabled: ${CHAT_LLM_ES_ENABLED:true}
+      host: ${CHAT_LLM_ES_HOST:http://127.0.0.1:9200}

@@ -1,0 +1,15 @@
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+security:
+  jwt:
+    secret: "${SECURITY_JWT_SECRET:ChangeThisSecretKeyChangeThisSecretKey}"
+    accessExpMinutes: 30
+    refreshExpDays: 7
+  # Redis 用户缓存配置（可覆盖）
+  cache:
+    user:
+      key-prefix: "security:user:"
+      ttl-minutes: 10
