@@ -1,0 +1,42 @@
+# RustFS 本地开发编排（按官方 Docker 方式组织）
+# 目标：为 resume-rag 提供 S3 兼容对象存储 + 自动建桶（resume-rag）
+services:
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: resume-rag-rustfs
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      # 与 application.yml 默认值保持一致
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-minioadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-minioadmin}
+    volumes:
+      - ./rustfs-data:/data
+    command: server /data --address :9000 --console-address :9001
+    healthcheck:
+      # 对 S3 根路径做可达性探测；RustFS 对未签名请求返回 403 也视为服务正常
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:9000"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  rustfs-init:
+    image: amazon/aws-cli:2.17.52
+    container_name: resume-rag-rustfs-init
+    restart: 'no'
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY:-minioadmin}
+      AWS_DEFAULT_REGION: ${RUSTFS_REGION:-us-east-1}
+      RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-http://rustfs:9000}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-resume-rag}
+    command:
+      - /bin/sh
+      - -c
+      - if aws --endpoint-url $$RUSTFS_ENDPOINT s3 ls s3://$$RUSTFS_BUCKET >/dev/null 2>&1; then echo bucket exists; else aws --endpoint-url $$RUSTFS_ENDPOINT s3 mb s3://$$RUSTFS_BUCKET; fi

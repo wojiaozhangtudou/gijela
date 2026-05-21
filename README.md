@@ -37,6 +37,8 @@ gijela 是一个面向企业管理与 AI 应用联调的单仓项目，包含后
 - 想快速理解模块分层：看“[模块关系](#模块关系)”
 - 想快速理解系统结构：看“[架构示意图](#架构示意图)”
 - 想快速启动本地环境：看“[快速启动（Windows / PowerShell）](#快速启动windows--powershell)”
+- 想一键拉起依赖组件：看“[一键启动第三方组件（docker-compose）](#2-一键启动第三方组件docker-compose)”
+- 想初始化数据库：看“[数据库初始化脚本（init sql）](#3-数据库初始化脚本init-sql)”
 - 想看后续规划：看“[Roadmap](#roadmap)”
 
 ## 本仓库完成了什么
@@ -457,7 +459,95 @@ flowchart TB
 
 > 详细仓库协作指引见 [QUICK-START.md](QUICK-START.md)。
 
-### 2) 后端启动（任选模块）
+### 2) 一键启动第三方组件（docker-compose）
+
+仓库已在 `docker/` 目录提供第三方组件编排，可直接启动。
+
+#### 2.1 启动 MySQL + Redis + Elasticsearch + Kibana + Qdrant + Neo4j
+
+```powershell
+Set-Location .\docker
+docker compose -f .\docker-compose-mysql-elasticsearch-qdrant-neo4j-redis-ik.yml up -d
+```
+
+默认端口：
+
+- MySQL: `3306`
+- Redis: `6379`
+- Elasticsearch: `9200`
+- Kibana: `5601`
+- Qdrant: `6333` / `6334`
+- Neo4j: `7474` / `7687`
+
+#### 2.2 启动对象存储 RustFS（可选）
+
+```powershell
+Set-Location .\docker
+docker compose -f .\docker-compose-rustfs.yml up -d
+```
+
+默认端口：
+
+- RustFS S3 Endpoint: `9000`
+- RustFS Console: `9001`
+
+> `docker-compose-rustfs.yml` 已包含初始化容器，会自动创建默认 bucket。
+
+#### 2.3 停止组件
+
+```powershell
+Set-Location .\docker
+docker compose -f .\docker-compose-mysql-elasticsearch-qdrant-neo4j-redis-ik.yml down
+docker compose -f .\docker-compose-rustfs.yml down
+```
+
+### 3) 数据库初始化脚本（init sql）
+
+已提供可直接执行的 SQL 脚本：
+
+- pistil 初始化脚本：
+	- `gijela-core/gijela-core-pistil/src/main/resources/db/init-pistil.sql`
+- chat-flow 初始化脚本：
+	- `gijela-core/gijela-core-chat-flow/src/main/resources/db/init-chat-flow.sql`
+- chat 基础表脚本：
+	- `gijela-core/gijela-core-chat/src/main/resources/db/init-chat.sql`
+- chat 增量迁移脚本：
+	- `gijela-core/gijela-core-chat/src/main/resources/db/migration/V*.sql`
+
+命名规范统一为：
+
+- 初始化脚本：`init-<module>.sql`
+- 增量迁移脚本：`V<版本号>__<描述>.sql`
+
+建议初始化顺序：
+
+1. 执行 `init-pistil.sql`（可选：仅当需要本地管理后台基础数据时）
+2. 执行 `init-chat.sql`
+3. 执行 `init-chat-flow.sql`
+
+说明：
+
+- `init-chat.sql` 已合并 chat 模块当前所需全量结构（包含历史增量结果）。
+- 对于**全新数据库初始化**，通常只需执行 `init-chat.sql`，不需要再执行 `V*.sql`。
+- `db/migration/V*.sql` 主要用于历史版本升级或增量演进场景。
+
+示例（PowerShell）：
+
+```powershell
+# chat 库
+Get-Content .\gijela-core\gijela-core-chat\src\main\resources\db\init-chat.sql |
+	docker exec -i mysql-8 mysql -uroot -psecretmysql gijela_chat
+
+# chat-flow（脚本内会创建并切换 gijela_chat_flow 库）
+Get-Content .\gijela-core\gijela-core-chat-flow\src\main\resources\db\init-chat-flow.sql |
+	docker exec -i mysql-8 mysql -uroot -psecretmysql
+
+# pistil（可选，脚本内包含管理后台基础表与数据）
+Get-Content .\gijela-core\gijela-core-pistil\src\main\resources\db\init-pistil.sql |
+	docker exec -i mysql-8 mysql -uroot -psecretmysql
+```
+
+### 4) 后端启动（任选模块）
 
 在仓库根目录执行：
 
@@ -475,7 +565,7 @@ mvn -f gijela-core/pom.xml -pl gijela-core-chat-flow -am install -DskipTests
 mvn -f gijela-core/gijela-core-chat-flow/pom.xml spring-boot:run
 ```
 
-### 3) 前端启动（对应子项目）
+### 5) 前端启动（对应子项目）
 
 ```powershell
 # pistil 前端

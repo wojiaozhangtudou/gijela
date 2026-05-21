@@ -1,0 +1,129 @@
+# 扩展开发环境组合：MySQL 8 + Elasticsearch 8.19.4 + Kibana 8.19.4 + Qdrant + Neo4j + Redis
+# 适用：本地检索/RAG 原型（结构化 + 向量 + 图 + 结构化检索 + 缓存）。
+# 不适合生产：仅为本地开发，部分安全项已关闭或使用默认密码。请在生产启用认证/加密与资源限制。
+#
+# 步骤（Windows CMD / PowerShell）：
+#   mkdir esdata qdrant_storage neo4j_data neo4j_logs mysqldata redisdata
+#   docker compose -f docker-compose-mysql-elasticsearch-qdrant-neo4j-redis.yml up -d
+#   docker compose -f docker-compose-mysql-elasticsearch-qdrant-neo4j-redis.yml down
+#
+# 访问端点：
+#   MySQL:         localhost:3306  (root/secretmysql)
+#   Elasticsearch: http://localhost:9200
+#   Kibana:        http://localhost:5601
+#   Qdrant REST:   http://localhost:6333
+#   Qdrant gRPC:   localhost:6334
+#   Neo4j Browser: http://localhost:7474  (neo4j/secretgraph)
+#   Neo4j Bolt:    bolt://localhost:7687
+#   Redis:         localhost:6379
+#
+# 可选调整：
+#   - MYSQL_ROOT_PASSWORD、MYSQL_DATABASE、MYSQL_USER、MYSQL_PASSWORD
+#   - 固定 Neo4j 版本 neo4j:5.22 或长期支持；Qdrant 固定具体版本避免 latest 波动
+#   - 为各服务设置资源限制（cpus / memory / healthcheck）
+
+services:
+  mysql:
+    image: mysql:8.4.7
+    container_name: mysql-8
+    environment:
+      - MYSQL_ROOT_PASSWORD=secretmysql
+      - MYSQL_DATABASE=appdb
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD=apppass
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    networks:
+      - devnet
+    restart: unless-stopped
+
+  elasticsearch:
+    build:
+      context: ./es-with-plugins
+      args:
+        ES_VERSION: 8.19.4
+    container_name: elasticsearch-8.19.4
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - xpack.security.http.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - devnet
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.19.4
+    container_name: kibana-8.19.4
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+    networks:
+      - devnet
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-vector
+    environment:
+      - QDRANT__LOG_LEVEL=INFO
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    ports:
+      - 6333:6333
+      - 6334:6334
+    networks:
+      - devnet
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j-graph
+    environment:
+      - NEO4J_AUTH=neo4j/secretgraph
+      # 可选性能调优参数（取消注释自行调整）
+      # - NEO4J_dbms_memory_heap_initial__size=512m
+      # - NEO4J_dbms_memory_heap_max__size=512m
+      # - NEO4J_dbms_memory_pagecache_size=512m
+    volumes:
+      - ./neo4j_data:/data
+      - ./neo4j_logs:/logs
+    ports:
+      - 7474:7474
+      - 7687:7687
+    networks:
+      - devnet
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2
+    container_name: redis-cache
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redisdata:/data
+    networks:
+      - devnet
+    restart: unless-stopped
+
+networks:
+  devnet:
+    driver: bridge
+
+
