@@ -14,15 +14,6 @@ gijela 是一个面向企业管理与 AI 应用联调的单仓项目，包含后
 
 > 这是一个围绕 **自研大模型调用基础设施** 展开的工程仓库：底层用 `gijela-core-llm` 做 LLM / MCP / Skill / Plugin 能力沉淀，中间用 `gijela-core-chat` 做真实服务联调验证，上层用 `gijela-core-chat-flow` 做流程化执行闭环验证，同时保留 `pistil` 作为企业后台承载环境。
 
-## English Summary
-
-`gijela` is a mono-repo focused on engineering-oriented LLM integration in Java.
-
-- `gijela-core-llm` is a self-built LLM toolkit based on Spring Boot 4 and OkHttp
-- `gijela-core-chat` is the integration playground used to verify that the toolkit is complete and production-oriented
-- `gijela-core-chat-flow` is the minimal workflow execution loop built on top of the LLM capabilities
-- `pistil` provides the admin-side business shell for future system integration
-
 ## 一句话看懂
 
 - 这是一个 **以自研 LLM 工具链为核心** 的单仓工程
