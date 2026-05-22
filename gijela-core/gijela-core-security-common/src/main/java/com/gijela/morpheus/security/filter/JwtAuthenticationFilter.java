@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -27,12 +28,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProperties props;
     private final AuthoritiesProvider authoritiesProvider;
     private final TokenVersionValidator tokenVersionValidator; // 可为空
+    private final StringRedisTemplate redisTemplate; // 可为空（无 Redis 时跳过黑名单校验）
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, JwtProperties props, AuthoritiesProvider authoritiesProvider){
-        this(jwtUtil, props, authoritiesProvider, null);
+        this(jwtUtil, props, authoritiesProvider, null, null);
     }
     public JwtAuthenticationFilter(JwtUtil jwtUtil, JwtProperties props, AuthoritiesProvider authoritiesProvider, TokenVersionValidator tokenVersionValidator){
+        this(jwtUtil, props, authoritiesProvider, tokenVersionValidator, null);
+    }
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, JwtProperties props, AuthoritiesProvider authoritiesProvider, TokenVersionValidator tokenVersionValidator, StringRedisTemplate redisTemplate){
         this.jwtUtil = jwtUtil; this.props = props; this.authoritiesProvider = authoritiesProvider; this.tokenVersionValidator = tokenVersionValidator;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -63,6 +69,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtUtil.parseToken(token);
                 Object typ = claims.get("typ");
                 if (typ!=null && "access".equals(typ.toString())) {
+                    String jti = jwtUtil.getJti(claims);
+                    if (isBlacklisted(jti)) {
+                        log.debug("access token 命中黑名单 jti={}", jti);
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                    if (props.isEnableAccessSessionCheck()) {
+                        String sid = claims.get("sid", String.class);
+                        if (!isSessionActive(sid)) {
+                            log.debug("access token 会话已失效 sid={}", sid);
+                            filterChain.doFilter(request, response);
+                            return;
+                        }
+                    }
                     String subject = claims.getSubject();
                     Long userId = null;
                     try { if (StringUtils.hasText(subject)) userId = Long.parseLong(subject); } catch (NumberFormatException ignore) {}
@@ -115,18 +135,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             return auth;
         }
-        // 支持 query 参数 token 与 access_token（EventSource 无法自定义 header 时可用）
-        String p = request.getParameter("token");
-        if (!StringUtils.hasText(p)) p = request.getParameter("access_token");
-        if (StringUtils.hasText(p)) return p;
-        // 支持 Cookie 中的 token
-        if (request.getCookies()!=null) {
-            for (Cookie c: request.getCookies()){
+        if (props.isAllowQueryToken()) {
+            String p = request.getParameter("token");
+            if (!StringUtils.hasText(p)) p = request.getParameter("access_token");
+            if (StringUtils.hasText(p)) return p;
+        }
+        if (props.isAllowCookieToken() && request.getCookies()!=null) {
+            for (Cookie c: request.getCookies()) {
                 if ("token".equals(c.getName()) || "access_token".equals(c.getName())) {
-                    String v = c.getValue(); if (StringUtils.hasText(v)) return v;
+                    String v = c.getValue();
+                    if (StringUtils.hasText(v)) return v;
                 }
             }
         }
         return null;
+    }
+
+    private boolean isBlacklisted(String jti) {
+        if (!StringUtils.hasText(jti) || redisTemplate == null) return false;
+        try {
+            String key = props.getBlacklistKeyPrefix() + jti;
+            Boolean hasKey = redisTemplate.hasKey(key);
+            return Boolean.TRUE.equals(hasKey);
+        } catch (Exception e) {
+            log.warn("查询 access 黑名单失败 jti={} err={}", jti, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean isSessionActive(String sid) {
+        // 兼容旧 token（无 sid）或无 Redis 场景，不拦截
+        if (!StringUtils.hasText(sid) || redisTemplate == null) return true;
+        try {
+            String key = props.getRefreshKeyPrefix() + "session:" + sid;
+            Boolean hasKey = redisTemplate.hasKey(key);
+            return Boolean.TRUE.equals(hasKey);
+        } catch (Exception e) {
+            log.warn("查询会话状态失败 sid={} err={}", sid, e.getMessage());
+            return true;
+        }
     }
 }

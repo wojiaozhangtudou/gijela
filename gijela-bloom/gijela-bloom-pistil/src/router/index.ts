@@ -4,7 +4,8 @@ import Dashboard from '../views/Dashboard.vue'
 import Profile from '../views/Profile.vue'
 import MainLayout from '../layout/MainLayout.vue'
 import { useUserStore } from '../store/user'
-import { fetchMenuTree } from '../api/client'
+import { fetchMenuTree, tryRefreshAccessToken } from '../api/client'
+import { getToken } from '../utils/auth'
 
 const staticRoutes: RouteRecordRaw[] = [
   { path: '/login', name: 'Login', component: Login },
@@ -16,6 +17,7 @@ const staticRoutes: RouteRecordRaw[] = [
   { path: 'dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true, title: 'message.dashboard' } },
   { path: 'profile', name: 'Profile', component: Profile, meta: { requiresAuth: true, title: 'user.profile' } },
   { path: 'system/users', name: 'UserList', component: () => import('../views/system/UserList.vue'), alias: 'sys/users', meta: { requiresAuth: true, title: 'message.user_management' } },
+  { path: 'system/sessions', name: 'SessionList', component: () => import('../views/system/SessionList.vue'), alias: 'sys/sessions', meta: { requiresAuth: true, title: 'message.session_management' } },
   { path: 'system/users/create', name: 'CreateUser', component: () => import('../views/system/CreateUser.vue'), meta: { requiresAuth: true, title: 'message.create_user' } },
   { path: 'system/users/:id/edit', name: 'EditUser', component: () => import('../views/system/EditUser.vue'), meta: { requiresAuth: true, title: 'message.edit_user' } },
   { path: 'sys/roles/create', name: 'CreateRole', component: () => import('../views/system/CreateRole.vue'), meta: { requiresAuth: true, title: 'message.create_role' } },
@@ -42,6 +44,7 @@ function menuNodesToRoutes(nodes: any[]): RouteRecordRaw[] {
     const p = (n.path || `m/${n.id}`).replace(/^\//, '')
     let componentLoader: any = () => import('../views/MenuPage.vue')
     if (/users?/i.test(p)) componentLoader = () => import('../views/system/UserList.vue')
+    else if (/sessions?|online-users?/i.test(p)) componentLoader = () => import('../views/system/SessionList.vue')
     else if (/roles?/i.test(p)) componentLoader = () => import('../views/system/RoleList.vue')
     else if (/menus?/i.test(p)) componentLoader = () => import('../views/system/MenuList.vue')
     else if (/depts?|department/i.test(p)) componentLoader = () => import('../views/system/DeptList.vue')
@@ -63,12 +66,19 @@ function menuNodesToRoutes(nodes: any[]): RouteRecordRaw[] {
 
 let dynamicLoaded = false
 router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  const token = localStorage.getItem('token')
+  let token = getToken()
   console.log('路由守卫检查:', { path: to.path, token: !!token })
   if (to.path === '/login') return next()
   if (!token) {
-    console.log('无 token，跳转到登录页')
-    return next({ path: '/login' })
+    try {
+      token = await tryRefreshAccessToken()
+    } catch {
+      token = null
+    }
+    if (!token) {
+      console.log('无 token，跳转到登录页')
+      return next({ path: '/login' })
+    }
   }
   console.log('有 token，继续导航')
   // load dynamic routes once after login or on page refresh

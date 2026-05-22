@@ -6,6 +6,34 @@ export const useTabsStore = defineStore('tabs', () => {
   const active = ref<string>('')
   const STORAGE_KEY = 'app_tabs_v1'
 
+  function normalizePath(path: string): string {
+    if (!path) return path
+    const p = path.replace(/\/+$/, '') || '/'
+    // 统一别名路径，避免刷新后同页面出现两个标签
+    if (p === '/sys/users') return '/system/users'
+    if (p === '/sys/sessions') return '/system/sessions'
+    return p
+  }
+
+  function dedupeTabs(input: Array<{ title: string; path: string; closable?: boolean }>) {
+    const map = new Map<string, { title: string; path: string; closable?: boolean }>()
+    for (const it of input || []) {
+      if (!it || !it.path) continue
+      const key = normalizePath(it.path)
+      if (!map.has(key)) {
+        map.set(key, { ...it, path: key })
+      } else {
+        const old = map.get(key)!
+        map.set(key, {
+          ...old,
+          // 非 closable（固定标签）优先保留
+          closable: (old.closable === false || it.closable === false) ? false : (old.closable ?? it.closable)
+        })
+      }
+    }
+    return Array.from(map.values())
+  }
+
   function persist() {
     try {
       const payload = { tabs: tabs.value, active: active.value }
@@ -21,8 +49,13 @@ export const useTabsStore = defineStore('tabs', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         if (parsed && Array.isArray(parsed.tabs) && parsed.tabs.length) {
-          tabs.value.splice(0, tabs.value.length, ...parsed.tabs)
-          active.value = parsed.active || (parsed.tabs[0] && parsed.tabs[0].path) || ''
+          const normalized = dedupeTabs(parsed.tabs)
+          tabs.value.splice(0, tabs.value.length, ...normalized)
+          active.value = normalizePath(parsed.active || (normalized[0] && normalized[0].path) || '')
+          if (!tabs.value.find(t => t.path === active.value) && tabs.value.length) {
+            active.value = tabs.value[0].path
+          }
+          persist()
           return
         }
       }
@@ -41,18 +74,20 @@ export const useTabsStore = defineStore('tabs', () => {
 
   function open(path: string, title?: string) {
     if (!path) return
-    const found = tabs.value.find((t) => t.path === path)
+    const np = normalizePath(path)
+    const found = tabs.value.find((t) => t.path === np)
     if (!found) {
-      tabs.value.push({ title: title || path, path, closable: true })
+      tabs.value.push({ title: title || np, path: np, closable: true })
     }
-    active.value = path
+    active.value = np
   persist()
   }
 
   function remove(path: string) {
-    const idx = tabs.value.findIndex((t) => t.path === path)
+    const np = normalizePath(path)
+    const idx = tabs.value.findIndex((t) => t.path === np)
     if (idx >= 0) tabs.value.splice(idx, 1)
-    if (active.value === path) {
+    if (active.value === np) {
       const last = tabs.value[tabs.value.length - 1]
       active.value = last ? last.path : ''
     }
@@ -74,7 +109,8 @@ export const useTabsStore = defineStore('tabs', () => {
 
   // update a single tab's title (used when menu labels become available)
   function updateTitle(path: string, title: string) {
-    const t = tabs.value.find((x) => x.path === path)
+    const np = normalizePath(path)
+    const t = tabs.value.find((x) => x.path === np)
     if (t && title && title !== t.title) {
       t.title = title
       persist()

@@ -138,6 +138,7 @@ INSERT INTO `aigc_sys_menu` VALUES (11, 1, '用户管理', 'M', '/sys/users', 'u
 INSERT INTO `aigc_sys_menu` VALUES (12, 1, '角色管理', 'M', '/sys/roles', 'role:list', 'List', 2, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (13, 1, '菜单管理', 'M', '/sys/menus', 'menu:list', 'List', 3, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (14, 1, '审计日志', 'M', '/sys/audit', 'log:view', 'List', 4, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
+INSERT INTO `aigc_sys_menu` VALUES (15, 1, '会话管理', 'M', '/sys/sessions', 'auth:session:list', 'List', 5, 1, NULL, '2026-05-22 00:00:00', '2026-05-22 00:00:00');
 INSERT INTO `aigc_sys_menu` VALUES (21, 2, '部门管理', 'M', '/org/dept', 'dept:list', 'List', 1, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (22, 2, '岗位管理', 'M', '/org/post', 'post:list', 'List', 2, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (111, 11, '新增用户', 'B', NULL, 'user:create', 'Plus', 1, 1, NULL, '2025-08-21 07:35:43', '2026-03-09 09:16:17');
@@ -151,6 +152,8 @@ INSERT INTO `aigc_sys_menu` VALUES (124, 12, '分配权限', 'B', NULL, 'role:as
 INSERT INTO `aigc_sys_menu` VALUES (131, 13, '新增菜单', 'B', NULL, 'menu:create', 'Plus', 1, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (132, 13, '编辑菜单', 'B', NULL, 'menu:update', 'Edit', 2, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (133, 13, '删除菜单', 'B', NULL, 'menu:delete', 'Delete', 3, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
+INSERT INTO `aigc_sys_menu` VALUES (151, 15, '踢出会话', 'B', NULL, 'auth:session:kickout', 'Delete', 1, 1, NULL, '2026-05-22 00:00:00', '2026-05-22 00:00:00');
+INSERT INTO `aigc_sys_menu` VALUES (152, 15, '全部踢出', 'B', NULL, 'auth:session:kickoutAll', 'Delete', 2, 1, NULL, '2026-05-22 00:00:00', '2026-05-22 00:00:00');
 INSERT INTO `aigc_sys_menu` VALUES (211, 21, '新增部门', 'B', NULL, 'dept:create', 'Plus', 1, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (212, 21, '编辑部门', 'B', NULL, 'dept:update', 'Edit', 2, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
 INSERT INTO `aigc_sys_menu` VALUES (213, 21, '删除部门', 'B', NULL, 'dept:delete', 'Delete', 3, 1, NULL, '2025-08-21 07:35:43', '2025-08-21 07:35:43');
@@ -228,6 +231,7 @@ INSERT INTO `aigc_sys_role_menu` VALUES (939, 4, 11);
 INSERT INTO `aigc_sys_role_menu` VALUES (944, 4, 12);
 INSERT INTO `aigc_sys_role_menu` VALUES (949, 4, 13);
 INSERT INTO `aigc_sys_role_menu` VALUES (953, 4, 14);
+INSERT INTO `aigc_sys_role_menu` VALUES (959, 4, 15);
 INSERT INTO `aigc_sys_role_menu` VALUES (957, 4, 21);
 INSERT INTO `aigc_sys_role_menu` VALUES (958, 4, 22);
 INSERT INTO `aigc_sys_role_menu` VALUES (940, 4, 111);
@@ -241,6 +245,8 @@ INSERT INTO `aigc_sys_role_menu` VALUES (948, 4, 124);
 INSERT INTO `aigc_sys_role_menu` VALUES (950, 4, 131);
 INSERT INTO `aigc_sys_role_menu` VALUES (951, 4, 132);
 INSERT INTO `aigc_sys_role_menu` VALUES (952, 4, 133);
+INSERT INTO `aigc_sys_role_menu` VALUES (960, 4, 151);
+INSERT INTO `aigc_sys_role_menu` VALUES (961, 4, 152);
 INSERT INTO `aigc_sys_role_menu` VALUES (954, 4, 212);
 INSERT INTO `aigc_sys_role_menu` VALUES (955, 4, 222);
 

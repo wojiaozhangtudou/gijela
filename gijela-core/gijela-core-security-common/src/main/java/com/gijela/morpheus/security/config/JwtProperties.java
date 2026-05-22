@@ -22,6 +22,13 @@ public class JwtProperties {
     private boolean enableTokenVersionCheck = false; // 是否启用 tokenVersion 校验
     private String userVersionKeyPrefix = "security:user:"; // 用户版本 Redis key 前缀 (key = prefix + username + ":version")
     private boolean autoIncrementOnPermissionChange = true; // 权限变更后是否自动递增版本
+    private String refreshKeyPrefix = "security:refresh:"; // 会话/refresh key 前缀
+    private String blacklistKeyPrefix = "security:blacklist:"; // access jti 黑名单 key 前缀
+    private boolean refreshRotateEnabled = true; // 是否启用 refresh 轮换
+    private boolean allowQueryToken = false; // 是否允许 query 参数携带 token
+    private boolean allowCookieToken = false; // 是否允许 cookie 携带 access token
+    private boolean enableAccessSessionCheck = true; // 是否启用 access sid 在线会话校验（实时踢出）
+    private int maxSessionsPerUser = 1; // 单账号最大在线会话数，<=0 表示不限制
 
     public JwtProperties(){
         // 默认白名单
@@ -56,4 +63,11 @@ public class JwtProperties {
     public boolean isEnableTokenVersionCheck(){return enableTokenVersionCheck;} public void setEnableTokenVersionCheck(boolean v){this.enableTokenVersionCheck=v;}
     public String getUserVersionKeyPrefix(){return userVersionKeyPrefix;} public void setUserVersionKeyPrefix(String userVersionKeyPrefix){this.userVersionKeyPrefix=userVersionKeyPrefix;}
     public boolean isAutoIncrementOnPermissionChange(){return autoIncrementOnPermissionChange;} public void setAutoIncrementOnPermissionChange(boolean v){this.autoIncrementOnPermissionChange=v;}
+    public String getRefreshKeyPrefix(){return refreshKeyPrefix;} public void setRefreshKeyPrefix(String refreshKeyPrefix){this.refreshKeyPrefix=refreshKeyPrefix;}
+    public String getBlacklistKeyPrefix(){return blacklistKeyPrefix;} public void setBlacklistKeyPrefix(String blacklistKeyPrefix){this.blacklistKeyPrefix=blacklistKeyPrefix;}
+    public boolean isRefreshRotateEnabled(){return refreshRotateEnabled;} public void setRefreshRotateEnabled(boolean refreshRotateEnabled){this.refreshRotateEnabled=refreshRotateEnabled;}
+    public boolean isAllowQueryToken(){return allowQueryToken;} public void setAllowQueryToken(boolean allowQueryToken){this.allowQueryToken=allowQueryToken;}
+    public boolean isAllowCookieToken(){return allowCookieToken;} public void setAllowCookieToken(boolean allowCookieToken){this.allowCookieToken=allowCookieToken;}
+    public boolean isEnableAccessSessionCheck(){return enableAccessSessionCheck;} public void setEnableAccessSessionCheck(boolean enableAccessSessionCheck){this.enableAccessSessionCheck=enableAccessSessionCheck;}
+    public int getMaxSessionsPerUser(){return maxSessionsPerUser;} public void setMaxSessionsPerUser(int maxSessionsPerUser){this.maxSessionsPerUser=maxSessionsPerUser;}
 }

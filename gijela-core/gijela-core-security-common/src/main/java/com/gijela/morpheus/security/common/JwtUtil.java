@@ -114,6 +114,7 @@ public class JwtUtil {
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("typ", "refresh");
+        claims.put("jti", UUID.randomUUID().toString());
         return createToken(claims, userDetails.getUsername(), getRefreshTtlMillis());
     }
 
@@ -121,6 +122,7 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("typ", "access");
         claims.put("username", username);
+        claims.put("jti", UUID.randomUUID().toString());
         if (extraClaims != null) {
             claims.putAll(extraClaims);
         }
@@ -128,9 +130,29 @@ public class JwtUtil {
     }
 
     public String generateRefreshToken(Long userId) {
+        return generateRefreshToken(userId, null);
+    }
+
+    public String generateRefreshToken(Long userId, String sessionId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("typ", "refresh");
+        claims.put("jti", UUID.randomUUID().toString());
+        if (sessionId != null && !sessionId.isBlank()) {
+            claims.put("sid", sessionId);
+        }
         return createTokenWithSubject(claims, String.valueOf(userId), getRefreshTtlMillis());
+    }
+
+    public String getJti(String token) {
+        Claims claims = parseToken(token);
+        return getJti(claims);
+    }
+
+    public String getJti(Claims claims) {
+        if (claims == null) return null;
+        Object jti = claims.get("jti");
+        if (jti != null) return jti.toString();
+        return claims.getId();
     }
 
     private String createToken(Map<String, Object> claims, String subject, long ttlMillis) {

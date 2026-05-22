@@ -1,17 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { loginApi, fetchUserInfo, fetchMenuTree } from '../api/client'
+import { loginApi, fetchUserInfo, fetchMenuTree, logoutApi } from '../api/client'
 import { getUserAvatar } from '../api/user'
 import { useTabsStore } from './tabs'
-import { setToken, removeToken } from '../utils/auth'
+import { getToken, setToken, removeToken } from '../utils/auth'
 
 export const useUserStore = defineStore('user', () => {
-  const token = ref<string | null>(getTokenFromStorage())
+  const token = ref<string | null>(getToken())
     const lastError = ref<string | null>(null)
-
-  function getTokenFromStorage(): string | null {
-    try { return localStorage.getItem('token') } catch { return null }
-  }
 
   async function login(username: string, password: string) {
     try {
@@ -79,9 +75,18 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await logoutApi()
+    } catch (e) {
+      console.warn('logout request failed', e)
+    }
     token.value = null
+    lastError.value = null
     removeToken()
+    profile.value = null
+    menus.value = []
+    externalLinks.value = []
     try {
       const tabs = useTabsStore()
       // close all tabs and clear persisted key

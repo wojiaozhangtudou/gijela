@@ -320,8 +320,8 @@ export default defineComponent({
       router.push('/profile')
     }
 
-    function logout() {
-      store.logout()
+    async function logout() {
+      await store.logout()
       router.push('/login')
     }
 

@@ -68,10 +68,15 @@ public class SecurityAuthAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(AuthoritiesProvider.class)
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, JwtProperties props, AuthoritiesProvider authoritiesProvider, ObjectProvider<TokenVersionValidator> validatorProvider){
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil,
+                                                           JwtProperties props,
+                                                           AuthoritiesProvider authoritiesProvider,
+                                                           ObjectProvider<TokenVersionValidator> validatorProvider,
+                                                           ObjectProvider<StringRedisTemplate> redisProvider){
         TokenVersionValidator validator = validatorProvider.getIfAvailable();
+        StringRedisTemplate redisTemplate = redisProvider.getIfAvailable();
         log.info("[security-common] 注册 JwtAuthenticationFilter(redisOnly) accessExpMinutes={} refreshExpDays={} redisPrefix={} tokenVersionCheck={} ", props.getAccessExpMinutes(), props.getRefreshExpDays(), props.getRedisAuthorityKeyPrefix(), props.isEnableTokenVersionCheck());
-        return new JwtAuthenticationFilter(jwtUtil, props, authoritiesProvider, validator);
+        return new JwtAuthenticationFilter(jwtUtil, props, authoritiesProvider, validator, redisTemplate);
     }
 
     @Bean

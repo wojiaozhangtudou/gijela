@@ -151,7 +151,7 @@ export default {
 
           router.push('/dashboard')
         } else {
-          ElMessage.error('登录失败，请检查用户名和密码')
+          ElMessage.error(userStore.lastError || '登录失败，请检查用户名和密码')
         }
       } catch (error: any) {
         console.error('Login error:', error)

@@ -155,6 +155,48 @@
           </div>
         </div>
       </el-card>
+
+      <el-dialog
+        v-model="deviceDialogVisible"
+        title="登录设备管理"
+        width="920px"
+        destroy-on-close
+      >
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px">
+          <el-button size="small" @click="loadMySessions">刷新</el-button>
+          <el-button type="danger" size="small" :disabled="!form.id" @click="onKickoutAllDevices">全部下线</el-button>
+        </div>
+
+        <el-table :data="deviceList" style="width:100%" :loading="deviceLoading">
+          <el-table-column prop="sessionId" :label="$t('message.session_id')" min-width="220" />
+          <el-table-column prop="deviceNo" :label="$t('message.device_no')" min-width="180" />
+          <el-table-column prop="loginIp" :label="$t('message.login_ip')" min-width="140" />
+          <el-table-column prop="clientLabel" :label="$t('message.client_label')" min-width="150" />
+          <el-table-column prop="loginAt" :label="$t('message.login_at')" min-width="170">
+            <template #default="{ row }">{{ formatTime(row.loginAt) }}</template>
+          </el-table-column>
+          <el-table-column prop="lastActiveAt" :label="$t('message.last_active_at')" min-width="170">
+            <template #default="{ row }">{{ formatTime(row.lastActiveAt) }}</template>
+          </el-table-column>
+          <el-table-column :label="$t('message.actions')" width="120" fixed="right">
+            <template #default="{ row }">
+              <el-button size="small" type="danger" @click="onKickoutDevice(row)">{{ $t('message.kickout') }}</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div style="margin-top:12px;text-align:right">
+          <el-pagination
+            background
+            layout="prev, pager, next, sizes, total"
+            :total="devicePage.total"
+            :page-size="devicePage.size"
+            :current-page="devicePage.current"
+            @current-change="onDevicePageChange"
+            @size-change="onDeviceSizeChange"
+          />
+        </div>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -162,7 +204,8 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, onMounted } from 'vue'
 import { getCurrentUser, saveUser, updateAvatar, getUserAvatar } from '../api/user'
-import { ElMessage } from 'element-plus'
+import { kickoutAllLoginSessions, kickoutLoginSession, pageLoginSessions } from '../api/auth'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { showApiResult } from '../utils/apiResult'
 import { useI18n } from 'vue-i18n'
 import { User, Upload, Check, RefreshLeft, Lock, Camera, Message, Phone, EditPen } from '@element-plus/icons-vue'
@@ -186,6 +229,10 @@ export default defineComponent({
   const fileRef = ref<HTMLInputElement | null>(null)
   const saving = ref(false)
   const uploading = ref(false)
+    const deviceDialogVisible = ref(false)
+    const deviceLoading = ref(false)
+    const deviceList = ref<any[]>([])
+    const devicePage = reactive({ current: 1, size: 10, total: 0 })
     const form = reactive<any>({ id: null, username: '', nickname: '', email: '', phone: '', avatar: '', status: '1' })
 
     const rules = {
@@ -354,11 +401,101 @@ export default defineComponent({
       }
     }
 
+    function formatTime(ts?: number) {
+      if (!ts) return '-'
+      const d = new Date(ts)
+      if (Number.isNaN(d.getTime())) return '-'
+      return d.toLocaleString()
+    }
+
+    async function loadMySessions() {
+      if (!form.id) return
+      deviceLoading.value = true
+      try {
+        const res = await pageLoginSessions({
+          current: devicePage.current,
+          size: devicePage.size,
+          userId: Number(form.id)
+        })
+        const data = res?.data || { records: [], total: 0 }
+        deviceList.value = Array.isArray(data.records) ? data.records : []
+        devicePage.total = Number(data.total || 0)
+      } catch (e) {
+        ElMessage.error(String(t('message.load_sessions_failed')))
+      } finally {
+        deviceLoading.value = false
+      }
+    }
+
+    async function onKickoutDevice(row: any) {
+      if (!row?.sessionId) return
+      try {
+        await ElMessageBox.confirm(String(t('message.kickout_confirm')), String(t('message.confirm')), { type: 'warning' })
+        const res = await kickoutLoginSession(String(row.sessionId))
+        showApiResult(res, String(t('message.kickout_success')), () => loadMySessions())
+      } catch (e) {
+        // cancel
+      }
+    }
+
+    async function onKickoutAllDevices() {
+      if (!form.id) return
+      try {
+        await ElMessageBox.confirm(String(t('message.kickout_all_confirm')), String(t('message.confirm')), { type: 'warning' })
+        const res = await kickoutAllLoginSessions(Number(form.id))
+        showApiResult(res, String(t('message.kickout_all_success')), () => loadMySessions())
+      } catch (e) {
+        // cancel
+      }
+    }
+
+    function onDevicePageChange(p: number) {
+      devicePage.current = p
+      loadMySessions()
+    }
+
+    function onDeviceSizeChange(s: number) {
+      devicePage.size = s
+      devicePage.current = 1
+      loadMySessions()
+    }
+
     function onChangePassword() { ElMessage.info(String(t('profile.change_password')) + ' - 功能待实现') }
-    function onManageDevices() { ElMessage.info('登录设备管理 - 功能待实现') }
+    function onManageDevices() {
+      if (!form.id) {
+        ElMessage.warning('用户信息未加载完成，请稍后重试')
+        return
+      }
+      devicePage.current = 1
+      deviceDialogVisible.value = true
+      loadMySessions()
+    }
 
   onMounted(() => { load() })
-  return { form, formRef, fileRef, rules, saving, uploading, onSave, onCancel, onUploadAvatar, onFileChange, onChangePassword, onManageDevices }
+  return {
+    form,
+    formRef,
+    fileRef,
+    rules,
+    saving,
+    uploading,
+    deviceDialogVisible,
+    deviceLoading,
+    deviceList,
+    devicePage,
+    formatTime,
+    onSave,
+    onCancel,
+    onUploadAvatar,
+    onFileChange,
+    onChangePassword,
+    onManageDevices,
+    loadMySessions,
+    onKickoutDevice,
+    onKickoutAllDevices,
+    onDevicePageChange,
+    onDeviceSizeChange
+  }
   }
 })
 </script>

@@ -18,6 +18,8 @@ public class LoginVO {
     private String username;
     @Schema(description = "昵称")
     private String nickname;
+    @Schema(description = "登录会话ID")
+    private String sessionId;
 
     public String getAccessToken() { return accessToken; }
     public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
@@ -33,4 +35,6 @@ public class LoginVO {
     public void setUsername(String username) { this.username = username; }
     public String getNickname() { return nickname; }
     public void setNickname(String nickname) { this.nickname = nickname; }
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
 }

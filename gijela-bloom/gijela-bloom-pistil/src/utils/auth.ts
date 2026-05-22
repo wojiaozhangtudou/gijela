@@ -1,11 +1,13 @@
+let tokenMemory: string | null = null
+
 export function getToken(): string | null {
-  try { return localStorage.getItem('token') } catch { return null }
+  return tokenMemory
 }
 
-export function setToken(t: string) {
-  try { localStorage.setItem('token', t) } catch {}
+export function setToken(t: string | null) {
+  tokenMemory = t || null
 }
 
 export function removeToken() {
-  try { localStorage.removeItem('token') } catch {}
+  tokenMemory = null
 }

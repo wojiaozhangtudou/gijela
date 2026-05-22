@@ -8,6 +8,17 @@ security:
     secret: "${SECURITY_JWT_SECRET:ChangeThisSecretKeyChangeThisSecretKey}"
     accessExpMinutes: 30
     refreshExpDays: 7
+    refreshKeyPrefix: "security:refresh:"
+    blacklistKeyPrefix: "security:blacklist:"
+    refreshRotateEnabled: true
+    allowQueryToken: false
+    allowCookieToken: false
+    enableAccessSessionCheck: true
+    maxSessionsPerUser: 5
+    enableTokenVersionCheck: true
+    userVersionKeyPrefix: "security:user:"
+    redisAuthorityKeyPrefix: "security:auth:perm:"
+    refresh-session-index-prefix: "security:user:sessions:"
   # Redis 用户缓存配置（可覆盖）
   cache:
     user:
