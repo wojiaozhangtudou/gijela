@@ -259,6 +259,11 @@
 </p>
 <p align="center"><em>图 6-1 图谱管理页面</em></p>
 
+<p align="center">
+  <img src="./assets/chat/31-graph-3d.png" alt="知识图谱3D展示" width="920" />
+</p>
+<p align="center"><em>图 6-2 知识图谱3D展示效果</em></p>
+
 ### 推荐操作
 
 1. 先选择或创建 `graphSpace`。
