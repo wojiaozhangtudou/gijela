@@ -28,12 +28,22 @@ gijela 是一个面向企业管理与 AI 应用联调的单仓项目，包含后
 - 想快速理解模块分层：看“[模块关系](#模块关系)”
 - 想快速理解系统结构：看“[架构示意图](#架构示意图)”
 - 想快速启动本地环境：看“[快速启动（Windows / PowerShell）](#快速启动windows--powershell)”
-- 想查看 chat 联调台的图文使用说明：看“[chat 操作手册](#chat-操作手册)”
-- 想查看 chat-flow 编排台的图文使用说明：看“[chat-flow 操作手册](#chat-flow-操作手册)”
-- 想查看 pistil 后台的图文使用说明：看“[pistil 操作手册](#pistil-操作手册)”
+- 想查看三个模块的图文手册：看“[三大模块操作手册总览](#三大模块操作手册总览)”
 - 想一键拉起依赖组件：看“[一键启动第三方组件（docker-compose）](#2-一键启动第三方组件docker-compose)”
 - 想初始化数据库：看“[数据库初始化脚本（init sql）](#3-数据库初始化脚本init-sql)”
 - 想看后续规划：看“[Roadmap](#roadmap)”
+
+## 三大模块操作手册总览
+
+如果你希望直接按页面上手，而不是先读实现细节，建议优先阅读下面三份图文手册。
+
+| 模块 | 适用场景 | 手册链接 |
+|---|---|---|
+| chat | 验证会话、知识库、附件、图谱、Skill、MCP 等联调链路 | [gijela-core/gijela-core-chat/doc/chat-操作手册.md](gijela-core/gijela-core-chat/doc/chat-%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md) |
+| chat-flow | 验证“模型配置 → 流程编辑 → 调试发布 → 会话运行 → 结果排障”全链路 | [gijela-core/gijela-core-chat-flow/doc/chat-flow-用户手册.md](gijela-core/gijela-core-chat-flow/doc/chat-flow-%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C.md) |
+| pistil | 体验用户、角色、菜单、组织、审计、会话等后台能力 | [gijela-core/gijela-core-pistil/doc/pistil-操作手册.md](gijela-core/gijela-core-pistil/doc/pistil-%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md) |
+
+建议顺序：先 `chat`（能力联调）→ 再 `chat-flow`（流程编排）→ 最后 `pistil`（后台承载）。
 
 ## 本仓库完成了什么
 
@@ -124,33 +134,6 @@ gijela/
 
 对应前端 `gijela-bloom-chat` 则基于 Vue 3 + TypeScript + Vite + Pinia + Element Plus，实现聊天联调界面，用于直接验证后端能力是否能跑通。
 
-#### chat 操作手册
-
-如果你当前重点是体验 `gijela-core-chat` 的联调能力，而不是先阅读技术实现，建议直接阅读图文版操作手册：
-
-- [gijela-core/gijela-core-chat/doc/chat-操作手册.md](gijela-core/gijela-core-chat/doc/chat-%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)
-
-这份手册适合以下读者：
-
-- 想快速熟悉 `chat` 联调台页面结构的人
-- 想按顺序验证模型、知识库、附件、图谱、Skill、MCP 链路的人
-- 想在测试、演示、交接时直接拿一份图文说明来用的人
-
-它已经覆盖了 `chat` 前端的主要页面与关键操作，包括：
-
-- 联调工作台的会话创建、模型切换、同步/流式发送
-- 知识库、图谱、附件、对象存储等外围能力联调
-- 技能管理、MCP 管理、模型配置、提示词管理
-- LLM 日志看板中的概览、审计、告警、排障入口
-
-你可以把它理解成一份“面向使用者的联调说明书”，适合用于：
-
-- 初次熟悉 `gijela-core-chat` 的页面结构与入口
-- 联调演示时按页面逐项验证能力
-- 测试回归时快速定位功能和操作路径
-
-如果你想先了解 `chat` 模块在整个仓库中的定位，继续读本 README；如果你想直接操作页面，优先看这份手册即可。
-
 ### 3. `gijela-core-chat-flow`：大模型工作流执行的最小闭环
 
 如果说 `gijela-core-chat` 关注的是“LLM 基础能力是否完整”，那么 `gijela-core-chat-flow` 关注的就是“如何把 LLM 能力编排成流程并真正执行”。
@@ -173,30 +156,6 @@ gijela/
 
 前端 `gijela-bloom-chat-flow` 使用 Vue 3 + TypeScript + Vite + Element Plus，并通过 Vue Flow 实现工作流节点可视化编排，形成从“定义 → 调试 → 执行 → 查看结果”的闭环界面。
 
-#### chat-flow 操作手册
-
-如果你当前重点是体验 `gijela-core-chat-flow` 的流程编排与执行联调，而不是先阅读底层实现，建议直接阅读图文版操作手册：
-
-- [gijela-core/gijela-core-chat-flow/doc/chat-flow-用户手册.md](gijela-core/gijela-core-chat-flow/doc/chat-flow-%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C.md)
-
-这份手册适合以下读者：
-
-- 想快速熟悉流程编排页面结构与入口的人
-- 想按顺序验证“模型配置 → 流程编辑 → 调试发布 → 会话运行 → 结果排障”的人
-- 想在测试、演示、交接时直接使用图文说明材料的人
-
-它已经覆盖了 `chat-flow` 前后端联调的主要页面与关键操作，包括：
-
-- 工作流空间、模型维护、流程编辑器、运行历史、会话工作台
-- 流程发布前后对比、运行详情、节点输入输出快照
-- `finalResult` 展开查看、连线日志等排障入口
-
-你可以把它理解成一份“面向使用者的编排联调说明书”，适合用于：
-
-- 初次熟悉 `chat-flow` 页面结构和关键按钮
-- 演示或培训时按链路逐项讲解流程能力
-- 回归测试时快速定位操作路径与问题定位入口
-
 ### 4. `pistil`：管理后台主业务与基础能力承载层
 
 除了 AI 相关模块，仓库里还有 `gijela-core-pistil` + `gijela-bloom-pistil` 这一套管理后台主线，用于承载系统级基础能力，包括：
@@ -208,32 +167,6 @@ gijela/
 - 动态菜单与前后端权限联动
 
 这部分为整个仓库提供了典型企业后台的基础骨架，也为后续把 AI 能力接入正式业务系统提供了承载环境。
-
-#### pistil 操作手册
-
-如果你当前关注的是 `pistil` 管理后台怎么实际使用，而不是底层技术实现，建议直接阅读图文版操作手册：
-
-- [gijela-core/gijela-core-pistil/doc/pistil-操作手册.md](gijela-core/gijela-core-pistil/doc/pistil-%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)
-
-这份手册适合以下读者：
-
-- 想快速熟悉 `pistil` 后台页面结构的人
-- 想按模块体验用户、角色、菜单、组织、审计、会话管理的人
-- 想在测试、演示、交接时直接使用图文说明材料的人
-
-它已经覆盖了 `pistil` 后台的主要页面与关键操作截图，包括：
-
-- 快速熟悉 `pistil` 后台的菜单结构与页面入口
-- 按步骤体验用户、角色、菜单、部门、岗位、审计、会话、个人中心等功能
-- 做联调演示、测试回归、培训交接时作为图文说明材料
-
-你可以把它理解成一份“面向使用者的后台操作说明书”，适合用于：
-
-- 初次熟悉后台的页面入口与功能分布
-- 演示或培训时按页面逐项讲解功能
-- 测试回归时快速找到对应操作路径
-
-如果你想先看“系统能做什么”，继续读本 README；如果你想直接上手操作后台，优先看这份手册即可。
 
 ## 项目亮点
 
