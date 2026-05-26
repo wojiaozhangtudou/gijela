@@ -216,9 +216,6 @@
             <el-option v-for="wf in workflowOptions" :key="wf.workflowId" :label="wf.name" :value="wf.workflowId" />
           </el-select>
         </el-form-item>
-        <el-form-item label="固定入参JSON">
-          <el-input v-model="form.workflowInputsJson" type="textarea" :rows="4" placeholder='例如 {"scene":"daily"}' />
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -278,8 +275,7 @@ const dialogVisible = ref(false)
 const editingSessionId = ref('')
 const form = reactive({
   title: '',
-  workflowId: '',
-  workflowInputsJson: '{}'
+  workflowId: ''
 })
 
 const activeSessionTitle = computed(() => {
@@ -522,7 +518,6 @@ function openCreate() {
   editingSessionId.value = ''
   form.title = ''
   form.workflowId = workflowOptions.value[0]?.workflowId || ''
-  form.workflowInputsJson = '{}'
   dialogVisible.value = true
 }
 
@@ -530,7 +525,6 @@ function openEdit(item: ChatflowSessionItem) {
   editingSessionId.value = item.sessionId
   form.title = item.title
   form.workflowId = item.workflowId
-  form.workflowInputsJson = JSON.stringify(item.workflowInputs || {}, null, 2)
   dialogVisible.value = true
 }
 
@@ -544,20 +538,9 @@ async function submitSession() {
     return
   }
 
-  let workflowInputs: Record<string, unknown> = {}
-  if (form.workflowInputsJson.trim()) {
-    try {
-      workflowInputs = JSON.parse(form.workflowInputsJson)
-    } catch {
-      ElMessage.error('固定入参JSON格式不正确')
-      return
-    }
-  }
-
   const payload = {
     title: form.title.trim(),
-    workflowId: form.workflowId,
-    workflowInputs
+    workflowId: form.workflowId
   }
 
   if (editingSessionId.value) {

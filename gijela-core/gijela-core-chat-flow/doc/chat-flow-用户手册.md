@@ -1,4 +1,4 @@
-# gijela-core-chat-flow 用户手册
+# gijela-core-chat-flow 操作手册
 
 > 适用对象：产品演示、联调开发、测试验证、问题排查。
 
@@ -13,7 +13,7 @@
 | 项 | 内容 |
 |---|---|
 | 文档版本 | v1.0.0 |
-| 更新时间 | 2026-05-25 |
+| 更新时间 | 2026-05-26 |
 | 前端模块 | `gijela-bloom/gijela-bloom-chat-flow` |
 | 后端模块 | `gijela-core/gijela-core-chat-flow` |
 | 目标读者 | 联调开发、测试、演示、维护同学 |
@@ -28,11 +28,12 @@
 - [3. 页面入口总览](#3-页面入口总览)
 - [4. 快速上手（10分钟）](#4-快速上手10分钟)
 - [5. 模块操作说明](#5-模块操作说明)
-  - [4.1 工作流空间](#41-工作流空间)
-  - [4.2 模型维护](#42-模型维护)
-  - [4.3 流程编辑器](#43-流程编辑器)
-  - [4.4 会话工作台](#44-会话工作台)
-  - [4.5 运行历史页](#45-运行历史页)
+  - [5.1 工作流空间](#51-工作流空间)
+  - [5.2 模型维护](#52-模型维护)
+  - [5.3 流程编辑器](#53-流程编辑器)
+  - [5.4 会话工作台](#54-会话工作台)
+  - [5.5 运行历史页](#55-运行历史页)
+  - [5.6 真实案例：四节点串联](#56-真实案例四节点串联)
 - [6. 推荐联调路径](#6-推荐联调路径)
 - [7. 常见问题](#7-常见问题)
 - [8. 关键接口清单](#8-关键接口清单)
@@ -122,7 +123,7 @@
 
 ## 5. 模块操作说明
 
-### 4.1 工作流空间
+### 5.1 工作流空间
 
 入口：`/workflows`
 
@@ -142,11 +143,11 @@
 <p align="center">
   <img src="./assets/chat-flow/14-workflow-list-status.png" alt="chat-flow 工作流列表状态视图" width="920" />
 </p>
-<p align="center"><em>图 4-1-1 工作流列表状态视图（草稿/发布状态查看）</em></p>
+<p align="center"><em>图 5-1-1 工作流列表状态视图（草稿/发布状态查看）</em></p>
 
 ---
 
-### 4.2 模型维护
+### 5.2 模型维护
 
 入口：`/llm-models`
 
@@ -173,20 +174,20 @@
 <p align="center">
   <img src="./assets/chat-flow/02-llm-models.png" alt="chat-flow 模型维护页面" width="920" />
 </p>
-<p align="center"><em>图 4-2 模型维护页面（/llm-models）</em></p>
+<p align="center"><em>图 5-2 模型维护页面（/llm-models）</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/06-llm-model-create-dialog.png" alt="chat-flow 新建模型弹窗" width="920" />
 </p>
-<p align="center"><em>图 4-2-1 新建模型弹窗</em></p>
+<p align="center"><em>图 5-2-1 新建模型弹窗</em></p>
 
 ---
 
-### 4.3 流程编辑器
+### 5.3 流程编辑器
 
 入口：`/workflows/{workflowId}/editor`
 
-#### 4.3.1 顶部工具栏
+#### 5.3.1 顶部工具栏
 
 - 更新名称
 - 保存（草稿）
@@ -197,7 +198,7 @@
 - 连线日志
 - 查看 JSON
 
-#### 4.3.2 画布区
+#### 5.3.2 画布区
 
 左侧节点库默认支持：
 
@@ -207,7 +208,7 @@
 
 支持拖拽到画布，支持节点连线、删节点、删连线。
 
-#### 4.3.3 右侧配置区
+#### 5.3.3 右侧配置区
 
 - 工作流入参：调试输入值
 - 节点配置：
@@ -217,7 +218,12 @@
   - 提示词模板
   - 入参映射（前置节点/工作流入参/常量）
 
-#### 4.3.4 调试与发布
+<p align="center">
+  <img src="./assets/chat-flow/20-llm-node-config-select.png" alt="chat-flow LLM 节点模式选择截图" width="920" />
+</p>
+<p align="center"><em>图 5-3-4 LLM 节点模式选择（chat / transform）</em></p>
+
+#### 5.3.4 调试与发布
 
 - **调试**：用于当前草稿版本联调
 - **发布**：将当前可用版本设为可被会话调用
@@ -227,26 +233,36 @@
 <p align="center">
   <img src="./assets/chat-flow/15-workflow-before-publish.png" alt="chat-flow 发布前流程编辑器状态" width="920" />
 </p>
-<p align="center"><em>图 4-3-2 发布前状态（点击发布按钮前）</em></p>
+<p align="center"><em>图 5-3-2 发布前状态（点击发布按钮前）</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/16-workflow-after-publish.png" alt="chat-flow 发布后流程编辑器状态" width="920" />
 </p>
-<p align="center"><em>图 4-3-3 发布后状态（点击发布按钮后）</em></p>
+<p align="center"><em>图 5-3-3 发布后状态（点击发布按钮后）</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/03-workflow-editor.png" alt="chat-flow 流程编辑器页面" width="920" />
 </p>
-<p align="center"><em>图 4-3 流程编辑器页面（/workflows/{workflowId}/editor）</em></p>
+<p align="center"><em>图 5-3 流程编辑器页面（/workflows/{workflowId}/editor）</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/07-workflow-json-dialog.png" alt="chat-flow 查看JSON弹窗" width="920" />
 </p>
-<p align="center"><em>图 4-3-1 查看 JSON 弹窗</em></p>
+<p align="center"><em>图 5-3-1 查看 JSON 弹窗</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/18-llm-node-config-panel.png" alt="chat-flow 节点配置标签页示例" width="920" />
+</p>
+<p align="center"><em>图 5-3-5 节点配置标签页示例</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/19-workflow-connection-log-dialog.png" alt="chat-flow 连线日志弹窗" width="920" />
+</p>
+<p align="center"><em>图 5-3-6 连线日志弹窗</em></p>
 
 ---
 
-### 4.4 会话工作台
+### 5.4 会话工作台
 
 入口：`/chat-workbench`
 
@@ -260,7 +276,6 @@
 
 - 会话标题
 - 关联工作流（仅可选“已发布流程”）
-- 固定入参 JSON（可选）
 
 发送消息后可查看：
 
@@ -271,31 +286,41 @@
 <p align="center">
   <img src="./assets/chat-flow/05-chat-workbench.png" alt="chat-flow 会话工作台页面" width="920" />
 </p>
-<p align="center"><em>图 4-4 会话工作台页面（/chat-workbench）</em></p>
+<p align="center"><em>图 5-4 会话工作台页面（/chat-workbench）</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/08-chat-create-session-dialog.png" alt="chat-flow 新建会话弹窗" width="920" />
 </p>
-<p align="center"><em>图 4-4-1 新建会话弹窗</em></p>
+<p align="center"><em>图 5-4-1 新建会话弹窗</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/09-chat-run-history-dialog.png" alt="chat-flow 会话工作台运行历史弹窗" width="920" />
 </p>
-<p align="center"><em>图 4-4-2 会话工作台运行历史弹窗</em></p>
+<p align="center"><em>图 5-4-2 会话工作台运行历史弹窗</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/11-chat-run-history-detail-panel.png" alt="chat-flow 会话工作台运行历史详情区" width="920" />
+</p>
+<p align="center"><em>图 5-4-3 会话工作台运行历史详情区</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/12-chat-node-detail-dialog.png" alt="chat-flow 节点详情弹窗（输入输出快照）" width="920" />
 </p>
-<p align="center"><em>图 4-4-3 节点详情弹窗（inputSnapshot / outputSnapshot）</em></p>
+<p align="center"><em>图 5-4-4 节点详情弹窗（inputSnapshot / outputSnapshot）</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/13-chat-run-history-selected-run.png" alt="chat-flow 运行历史选中记录详情" width="920" />
 </p>
-<p align="center"><em>图 4-4-4 运行历史选中记录详情视图</em></p>
+<p align="center"><em>图 5-4-5 运行历史选中记录详情视图</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/17-chat-final-result-expanded.png" alt="chat-flow finalResult 展开态" width="920" />
+</p>
+<p align="center"><em>图 5-4-6 finalResult 展开态</em></p>
 
 ---
 
-### 4.5 运行历史页
+### 5.5 运行历史页
 
 入口：`/workflows/{workflowId}/runs`
 
@@ -314,12 +339,54 @@
 <p align="center">
   <img src="./assets/chat-flow/04-workflow-runs.png" alt="chat-flow 运行历史页面" width="920" />
 </p>
-<p align="center"><em>图 4-5 运行历史页面（/workflows/{workflowId}/runs）</em></p>
+<p align="center"><em>图 5-5 运行历史页面（/workflows/{workflowId}/runs）</em></p>
 
 <p align="center">
   <img src="./assets/chat-flow/10-workflow-run-detail-drawer.png" alt="chat-flow 运行详情抽屉" width="920" />
 </p>
-<p align="center"><em>图 4-5-1 运行详情抽屉（单次运行明细）</em></p>
+<p align="center"><em>图 5-5-1 运行详情抽屉（单次运行明细）</em></p>
+
+---
+
+### 5.6 真实案例：四节点串联
+
+案例流程：`开始 -> llm-chat -> llm-transform -> 结束`
+
+目标：
+
+- `llm-chat` 负责承接会话输入并生成基础回答
+- `llm-transform` 负责将 `llm-chat` 输出改写为“五言律诗”
+
+<p align="center">
+  <img src="./assets/chat-flow/31流程配置.png" alt="四节点流程配置" width="920" />
+</p>
+<p align="center"><em>图 5-6-1 四节点流程配置（开始 -> llm-chat -> llm-transform -> 结束）</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/32新建会话.png" alt="新建会话并绑定流程" width="920" />
+</p>
+<p align="center"><em>图 5-6-2 新建会话并绑定流程</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/33会话信息.png" alt="会话信息与执行入口" width="920" />
+</p>
+<p align="center"><em>图 5-6-3 会话信息与执行入口</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/34流程执行信息%20llm2.png" alt="llm-chat执行详情" width="920" />
+</p>
+<p align="center"><em>图 5-6-4 `llm-chat` 执行详情（会话语义处理）</em></p>
+
+<p align="center">
+  <img src="./assets/chat-flow/35流程执行信息%20llm3.png" alt="llm-transform执行详情" width="920" />
+</p>
+<p align="center"><em>图 5-6-5 `llm-transform` 执行详情（改写为五言律诗）</em></p>
+
+该案例可直接用于联调验证：
+
+1. 会话语义是否进入 `llm-chat`
+2. 上游输出是否被 `llm-transform` 正确接收
+3. 终态结果是否符合“指定文体改写”预期
 
 ---
 
@@ -470,9 +537,14 @@ mysql -h 127.0.0.1 -P 3306 -u root -p < "gijela-core/gijela-core-chat-flow/src/m
 14. `14-workflow-list-status.png`：工作流列表状态视图
 15. `15-workflow-before-publish.png`：发布前流程编辑器状态
 16. `16-workflow-after-publish.png`：发布后流程编辑器状态
+17. `17-chat-final-result-expanded.png`：会话工作台 finalResult 展开态
+18. `18-llm-node-config-panel.png`：节点配置标签页示例
+19. `19-workflow-connection-log-dialog.png`：流程编辑器连线日志弹窗
+20. `20-llm-node-config-select.png`：LLM 节点模式选择截图
+21. `31流程配置.png`：四节点流程配置截图
+22. `32新建会话.png`：新建会话截图
+23. `33会话信息.png`：会话信息截图
+24. `34流程执行信息 llm2.png`：`llm-chat` 节点执行详情
+25. `35流程执行信息 llm3.png`：`llm-transform` 节点执行详情
 
-后续可继续补充：
-
-- 节点配置细节图（LLM 参数、入参映射）
-- 调试面板展开图（节点输入/输出快照）
-- 运行详情中的 finalResult 展开态截图
+当前版本截图已覆盖：模型配置、流程编辑、发布、会话验证、运行排障的完整链路。
